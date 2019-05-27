@@ -125,7 +125,7 @@ public class MapRenderer implements Disposable{
         TextureRegion textureRegion;
         final boolean isEditorIconExist = Core.atlas.isFound(wall.editorIcon());
 
-        Float tileRegion = new Float();
+        Rectangle2D.Float tileRegion = new Rectangle2D.Float();
         Team team = tile.getTeam();
         float offsetSize = -Mathf.floor((float)(wall.size / 3.0)) * tilesize;
         FloatPoint offset = new FloatPoint(offsetSize, offsetSize);
@@ -154,13 +154,12 @@ public class MapRenderer implements Disposable{
         mesh.setColor(Color.WHITE);
     }
 
-
     private void renderMeshRegion(Point windowPoint, IndexedRenderer mesh, Tile tile, Block wall, int indexWall) {
         TextureRegion textureRegion;
         final boolean isBlockPart = (wall.synthetic() || wall instanceof BlockPart);
         final boolean isEditorIconExist = Core.atlas.isFound(wall.editorIcon());
 
-        Float meshRegion = new Float();
+        Rectangle2D.Float meshRegion = new Rectangle2D.Float();
         boolean needsRotate = false;
         Block floor = tile.floor();
 
