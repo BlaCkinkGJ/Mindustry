@@ -33,7 +33,7 @@ import java.io.*;
 
 import static io.anuke.mindustry.Vars.*;
 
-public class Player extends Unit implements BuilderTrait, ShooterTrait{
+public class Player extends Unit implements BuilderMinerTrait, ShooterTrait{
     public static final int timerSync = 2;
     public static final int timerAbility = 3;
     private static final int timerShootLeft = 0;
@@ -362,7 +362,7 @@ public class Player extends Unit implements BuilderTrait, ShooterTrait{
     public void drawOver(){
         if(dead) return;
 
-        drawBuilding();
+        drawMechanics();
     }
 
     @Override
@@ -429,7 +429,7 @@ public class Player extends Unit implements BuilderTrait, ShooterTrait{
     public void drawBuildRequests(){
         BuildRequest last = null;
         for(BuildRequest request : getPlaceQueue()){
-            if(getCurrentRequest() == request && request.progress > 0.001f) continue;
+            if(request.progress > 0.01f || (getCurrentRequest() == request && (dst(request.x * tilesize, request.y * tilesize) <= placeDistance || state.isEditor()))) continue;
 
             if(request.breaking){
                 Block block = world.ltile(request.x, request.y).block();
@@ -551,7 +551,7 @@ public class Player extends Unit implements BuilderTrait, ShooterTrait{
 
         if(!isLocal){
             interpolate();
-            updateBuilding(); //building happens even with non-locals
+            updateMechanics(); //building happens even with non-locals
             status.update(this); //status effect updating also happens with non locals for effect purposes
             updateVelocityStatus(); //velocity too, for visual purposes
 
@@ -572,7 +572,7 @@ public class Player extends Unit implements BuilderTrait, ShooterTrait{
 
         isTyping = ui.chatfrag.chatOpen();
 
-        updateBuilding();
+        updateMechanics();
 
         if(!mech.flying){
             clampPosition();

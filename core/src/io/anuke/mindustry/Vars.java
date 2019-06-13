@@ -84,6 +84,10 @@ public class Vars{
     };
     /** default server port */
     public static final int port = 6567;
+    /** multicast discovery port.*/
+    public static final int multicastPort = 20151;
+    /** multicast group for discovery.*/
+    public static final String multicastGroup = "227.2.7.7";
     /** if true, UI is not drawn */
     public static boolean disableUI;
     /** if true, game is set up in mobile mode, even on desktop. used for debugging */
@@ -120,6 +124,7 @@ public class Vars{
     public static GameState state;
     public static GlobalData data;
     public static EntityCollisions collisions;
+    public static DefaultWaves defaultWaves;
 
     public static Control control;
     public static Logic logic;
@@ -168,6 +173,7 @@ public class Vars{
             content.setVerbose();
         }
 
+        defaultWaves = new DefaultWaves();
         collisions = new EntityCollisions();
 
         playerGroup = Entities.addGroup(Player.class).enableMapping();

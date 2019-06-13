@@ -1,10 +1,15 @@
 package io.anuke.mindustry.content;
 
 import io.anuke.arc.Core;
+import io.anuke.arc.function.BooleanProvider;
 import io.anuke.arc.graphics.Color;
 import io.anuke.arc.graphics.g2d.*;
 import io.anuke.arc.math.Mathf;
+import io.anuke.arc.util.Tmp;
 import io.anuke.mindustry.Vars;
+import io.anuke.mindustry.entities.Damage;
+import io.anuke.mindustry.entities.bullet.Bullet;
+import io.anuke.mindustry.entities.bullet.BulletType;
 import io.anuke.mindustry.game.ContentList;
 import io.anuke.mindustry.graphics.*;
 import io.anuke.mindustry.type.*;
@@ -72,7 +77,7 @@ public class Blocks implements ContentList{
     duo, scatter, scorch, hail, arc, wave, lancer, swarmer, salvo, fuse, ripple, cyclone, spectre, meltdown,
 
     //units
-    spiritFactory, phantomFactory, wraithFactory, ghoulFactory, revenantFactory, daggerFactory, crawlerFactory, titanFactory,
+    draugFactory, spiritFactory, phantomFactory, wraithFactory, ghoulFactory, revenantFactory, daggerFactory, crawlerFactory, titanFactory,
     fortressFactory, repairPoint,
 
     //upgrades
@@ -1248,7 +1253,7 @@ public class Blocks implements ContentList{
             requirements(Category.effect, () -> world.isZone(), ItemStack.with(Items.copper, 500, Items.silicon, 150, Items.lead, 200));
             size = 3;
             itemCapacity = 100;
-            launchTime = 60f * 8;
+            launchTime = 60f * 16;
             hasPower = true;
             consumes.power(1f);
         }};
@@ -1257,7 +1262,7 @@ public class Blocks implements ContentList{
             requirements(Category.effect, () -> world.isZone(), ItemStack.with(Items.titanium, 400, Items.silicon, 300, Items.lead, 500, Items.plastanium, 150));
             size = 4;
             itemCapacity = 250;
-            launchTime = 60f * 7;
+            launchTime = 60f * 14;
             hasPower = true;
             consumes.power(2f);
         }};
@@ -1290,8 +1295,8 @@ public class Blocks implements ContentList{
                 Items.scrap, Bullets.flakScrap,
                 Items.lead, Bullets.flakLead
             );
-            reload = 16f;
-            range = 175f;
+            reload = 18f;
+            range = 170f;
             size = 2;
             burstSpacing = 5f;
             shots = 2;
@@ -1407,11 +1412,11 @@ public class Blocks implements ContentList{
                 Items.pyratite, Bullets.missileIncendiary,
                 Items.surgealloy, Bullets.missileSurge
             );
-            reload = 50f;
+            reload = 40f;
             shots = 4;
             burstSpacing = 5;
             inaccuracy = 10f;
-            range = 140f;
+            range = 185f;
             xRand = 6f;
             size = 2;
             health = 300 * size * size;
@@ -1439,6 +1444,58 @@ public class Blocks implements ContentList{
             shots = 3;
             ammoUseEffect = Fx.shellEjectBig;
             health = 360;
+        }};
+
+        fuse = new ItemTurret("fuse"){{
+            requirements(Category.turret, ItemStack.with(Items.copper, 450, Items.graphite, 450, Items.thorium, 200));
+
+            reload = 35f;
+            shootShake = 4f;
+            range = 90f;
+            recoil = 5f;
+            shots = 3;
+            spread = 20f;
+            restitution = 0.1f;
+            shootCone = 30;
+            size = 3;
+
+            health = 220 * size * size;
+
+            ammo(Items.graphite, new BulletType(0.01f, 105){
+                int rays = 1;
+                float rayLength = range + 10f;
+
+                {
+                    hitEffect = Fx.hitLancer;
+                    shootEffect = smokeEffect = Fx.lightningShoot;
+                    lifetime = 10f;
+                    despawnEffect = Fx.none;
+                    pierce = true;
+                }
+
+                @Override
+                public void init(Bullet b){
+                    for(int i = 0; i < rays; i++){
+                        Damage.collideLine(b, b.getTeam(), hitEffect, b.x, b.y, b.rot(), rayLength - Math.abs(i - (rays / 2)) * 20f);
+                    }
+                }
+
+                @Override
+                public void draw(Bullet b){
+                    super.draw(b);
+                    Draw.color(Color.WHITE, Pal.lancerLaser, b.fin());
+                    //Draw.alpha(b.fout());
+                    for(int i = 0; i < 7; i++){
+                        Tmp.v1.trns(b.rot(), i * 8f);
+                        float sl = Mathf.clamp(b.fout() - 0.5f) * (80f - i * 10);
+                        Shapes.tri(b.x + Tmp.v1.x, b.y + Tmp.v1.y, 4f, sl, b.rot() + 90);
+                        Shapes.tri(b.x + Tmp.v1.x, b.y + Tmp.v1.y, 4f, sl, b.rot() - 90);
+                    }
+                    Shapes.tri(b.x, b.y, 20f * b.fout(), (rayLength + 50), b.rot());
+                    Shapes.tri(b.x, b.y, 20f * b.fout(), 10f, b.rot() + 180f);
+                    Draw.reset();
+                }
+            });
         }};
 
         ripple = new ArtilleryTurret("ripple"){{
@@ -1483,19 +1540,6 @@ public class Blocks implements ContentList{
             shootCone = 30f;
 
             health = 145 * size * size;
-        }};
-
-        fuse = new ItemTurret("fuse"){{
-            requirements(Category.turret, ItemStack.with(Items.copper, 450, Items.graphite, 450, Items.surgealloy, 250));
-            ammo(Items.graphite, Bullets.fuseShot);
-            reload = 40f;
-            shootShake = 4f;
-            range = 110f;
-            recoil = 5f;
-            restitution = 0.1f;
-            size = 3;
-
-            health = 165 * size * size;
         }};
 
         spectre = new DoubleTurret("spectre"){{
@@ -1544,6 +1588,18 @@ public class Blocks implements ContentList{
         //endregion
         //region units
 
+        BooleanProvider padVisible = () -> state.rules.attackMode || state.rules.pvp || state.isEditor();
+
+        draugFactory = new UnitFactory("draug-factory"){{
+            requirements(Category.units, ItemStack.with(Items.copper, 30, Items.lead, 120));
+            type = UnitTypes.draug;
+            produceTime = 5000;
+            size = 2;
+            maxSpawn = 2;
+            consumes.power(0.5f);
+            consumes.items();
+        }};
+
         spiritFactory = new UnitFactory("spirit-factory"){{
             requirements(Category.units, ItemStack.with(Items.copper, 70, Items.lead, 110, Items.silicon, 80));
             type = UnitTypes.spirit;
@@ -1565,67 +1621,68 @@ public class Blocks implements ContentList{
         }};
 
         wraithFactory = new UnitFactory("wraith-factory"){{
-            requirements(Category.units, ItemStack.with(Items.titanium, 60, Items.lead, 80, Items.silicon, 90));
+            requirements(Category.units, padVisible, ItemStack.with(Items.titanium, 60, Items.lead, 80, Items.silicon, 90));
             type = UnitTypes.wraith;
-            produceTime = 1800;
+            produceTime = 1500;
             size = 2;
-            consumes.power(1f);
-            consumes.items(new ItemStack(Items.silicon, 10), new ItemStack(Items.titanium, 10));
+            consumes.power(0.6f);
+            consumes.items(new ItemStack(Items.silicon, 20), new ItemStack(Items.titanium, 10));
         }};
 
         ghoulFactory = new UnitFactory("ghoul-factory"){{
-            requirements(Category.units, ItemStack.with(Items.plastanium, 80, Items.titanium, 100, Items.lead, 130, Items.silicon, 220));
+            requirements(Category.units, padVisible, ItemStack.with(Items.titanium, 150, Items.lead, 130, Items.silicon, 220));
             type = UnitTypes.ghoul;
-            produceTime = 3600;
+            produceTime = 2300;
             size = 3;
-            consumes.power(2f);
-            consumes.items(new ItemStack(Items.silicon, 30), new ItemStack(Items.titanium, 30), new ItemStack(Items.plastanium, 20));
+            consumes.power(1.2f);
+            consumes.items(new ItemStack(Items.silicon, 30), new ItemStack(Items.titanium, 20));
         }};
 
         revenantFactory = new UnitFactory("revenant-factory"){{
-            requirements(Category.units, ItemStack.with(Items.plastanium, 300, Items.titanium, 400, Items.lead, 300, Items.silicon, 400, Items.surgealloy, 100));
+            requirements(Category.units, padVisible, ItemStack.with(Items.plastanium, 100, Items.titanium, 300, Items.lead, 300, Items.silicon, 400));
             type = UnitTypes.revenant;
-            produceTime = 8000;
+            produceTime = 4000;
             size = 4;
             consumes.power(3f);
-            consumes.items(new ItemStack(Items.silicon, 80), new ItemStack(Items.titanium, 80), new ItemStack(Items.plastanium, 50));
+            consumes.items(new ItemStack(Items.silicon, 80), new ItemStack(Items.titanium, 80));
         }};
 
         daggerFactory = new UnitFactory("dagger-factory"){{
-            requirements(Category.units, ItemStack.with(Items.lead, 90, Items.silicon, 70));
+            requirements(Category.units, padVisible, ItemStack.with(Items.lead, 110, Items.silicon, 70));
             type = UnitTypes.dagger;
             produceTime = 1700;
             size = 2;
-            consumes.power(0.50f);
-            consumes.items(new ItemStack(Items.silicon, 10));
+            consumes.power(0.5f);
+            consumes.items(new ItemStack(Items.silicon, 15));
         }};
 
         crawlerFactory = new UnitFactory("crawler-factory"){{
-            requirements(Category.units, ItemStack.with(Items.lead, 100, Items.silicon, 80));
+            requirements(Category.units, padVisible, ItemStack.with(Items.lead, 50, Items.silicon, 80));
             type = UnitTypes.crawler;
-            produceTime = 1200;
+            produceTime = 500;
             size = 2;
-            consumes.power(0.4f);
-            consumes.items(new ItemStack(Items.blastCompound, 10));
+            maxSpawn = 5;
+            consumes.power(0.5f);
+            consumes.items(new ItemStack(Items.coal, 5), new ItemStack(Items.silicon, 5));
         }};
 
         titanFactory = new UnitFactory("titan-factory"){{
-            requirements(Category.units, ItemStack.with(Items.thorium, 90, Items.lead, 140, Items.silicon, 90));
+            requirements(Category.units, padVisible, ItemStack.with(Items.graphite, 100, Items.lead, 100, Items.silicon, 90));
             type = UnitTypes.titan;
-            produceTime = 3400;
+            produceTime = 2100;
             size = 3;
-            consumes.power(1.50f);
-            consumes.items(new ItemStack(Items.silicon, 20), new ItemStack(Items.thorium, 30));
+            consumes.power(0.60f);
+            consumes.items(new ItemStack(Items.silicon, 30));
         }};
 
         fortressFactory = new UnitFactory("fortress-factory"){{
-            requirements(Category.units, ItemStack.with(Items.thorium, 200, Items.lead, 220, Items.silicon, 150, Items.surgealloy, 100, Items.phasefabric, 50));
+            requirements(Category.units, padVisible, ItemStack.with(Items.thorium, 80, Items.lead, 220, Items.silicon, 150));
             type = UnitTypes.fortress;
-            produceTime = 5000;
+            produceTime = 4000;
             size = 3;
             maxSpawn = 3;
-            consumes.power(2f);
-            consumes.items(new ItemStack(Items.silicon, 40), new ItemStack(Items.thorium, 50));
+            consumes.power(1.4f);
+            consumes.items(new ItemStack(Items.silicon, 40), new ItemStack(Items.graphite, 30));
         }};
 
         repairPoint = new RepairPoint("repair-point"){{

@@ -142,7 +142,7 @@ public class PlacementFragment extends Fragment{
 
                         ImageButton button = blockTable.addImageButton("icon-locked", "select", 8 * 4, () -> {
                             if(unlocked(block)){
-                                input.block = block;
+                                input.block = input.block == block ? null : block;
                             }
                         }).size(46f).group(group).get();
 
@@ -161,6 +161,12 @@ public class PlacementFragment extends Fragment{
                                 hovered = null;
                             }
                         });
+                    }
+                    //add missing elements to even out table size
+                    if(index < 4){
+                        for(int i = 0; i < 4-index; i++){
+                            blockTable.add().size(46f);
+                        }
                     }
                     blockTable.act(0f);
                 };

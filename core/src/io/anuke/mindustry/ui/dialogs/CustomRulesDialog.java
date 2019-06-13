@@ -68,6 +68,7 @@ public class CustomRulesDialog extends FloatingDialog{
         number("$rules.unitdamagemultiplier", f -> rules.unitDamageMultiplier = f, () -> rules.unitDamageMultiplier);
 
         title("$rules.title.enemy");
+        check("$rules.attack", b -> rules.attackMode = b, () -> rules.attackMode);
         number("$rules.enemycorebuildradius", f -> rules.enemyCoreBuildRadius = f * tilesize, () -> Math.min(rules.enemyCoreBuildRadius / tilesize, 200));
     }
 
@@ -93,7 +94,7 @@ public class CustomRulesDialog extends FloatingDialog{
     }
 
     void check(String text, BooleanConsumer cons, BooleanProvider prov, BooleanProvider condition){
-        main.addCheck(text, cons).checked(prov.get()).update(a -> a.setDisabled(!condition.get())).padRight(100f);
+        main.addCheck(text, cons).checked(prov.get()).update(a -> a.setDisabled(!condition.get())).padRight(100f).get().left();
         main.row();
     }
 

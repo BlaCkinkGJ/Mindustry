@@ -27,6 +27,8 @@ import io.anuke.mindustry.input.InputHandler.PlaceDraw;
 import io.anuke.mindustry.type.*;
 import io.anuke.mindustry.ui.Bar;
 import io.anuke.mindustry.ui.ContentDisplay;
+import io.anuke.mindustry.world.blocks.Floor;
+import io.anuke.mindustry.world.blocks.OverlayFloor;
 import io.anuke.mindustry.world.consumers.*;
 import io.anuke.mindustry.world.meta.*;
 
@@ -345,7 +347,7 @@ public class Block extends BlockStorage{
             cacheRegions[i] = Core.atlas.find(cacheRegionStrings.get(i));
         }
 
-        if(cracks == null){
+        if(cracks == null || (cracks[0][0].getTexture() != null && cracks[0][0].getTexture().isDisposed())){
             cracks = new TextureRegion[maxCrackSize][crackRegions];
             for(int size = 1; size <= maxCrackSize; size++){
                 for(int i = 0; i < crackRegions; i++){
@@ -656,6 +658,18 @@ public class Block extends BlockStorage{
 
     public boolean isVisible(){
         return buildVisibility.get() && !isHidden();
+    }
+
+    public boolean isFloor(){
+        return this instanceof Floor;
+    }
+
+    public boolean isOverlay(){
+        return this instanceof OverlayFloor;
+    }
+
+    public Floor asFloor(){
+        return (Floor)this;
     }
 
     @Override

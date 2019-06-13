@@ -40,7 +40,7 @@ import static io.anuke.mindustry.Vars.*;
 
 public class NetServer implements ApplicationListener{
     public final static int maxSnapshotSize = 430;
-    private final static float serverSyncTime = 20, kickDuration = 30 * 1000;
+    private final static float serverSyncTime = 15, kickDuration = 30 * 1000;
     private final static Vector2 vector = new Vector2();
     private final static Rectangle viewport = new Rectangle();
     /** If a player goes away of their server-side coordinates by this distance, they get teleported back. */
@@ -197,7 +197,7 @@ public class NetServer implements ApplicationListener{
     public Team assignTeam(Iterable<Player> players){
         //find team with minimum amount of players and auto-assign player to that.
         return Structs.findMin(Team.all, team -> {
-            if(state.teams.isActive(team)){
+            if(state.teams.isActive(team) && !state.teams.get(team).cores.isEmpty()){
                 int count = 0;
                 for(Player other : players){
                     if(other.getTeam() == team){

@@ -57,7 +57,7 @@ public class Control implements ApplicationListener{
         content.initialize(Content::init);
         Core.atlas = new TextureAtlas(maxSize < 2048 ? "sprites/sprites_fallback.atlas" : "sprites/sprites.atlas");
         Draw.scl = 1f / Core.atlas.find("scale_marker").getWidth();
-        content.initialize(Content::load);
+        content.initialize(Content::load, true);
 
         data.load();
 
@@ -213,7 +213,7 @@ public class Control implements ApplicationListener{
         ui.loadAnd(() -> {
             logic.reset();
             world.loadGenerator(zone.generator);
-            state.rules = zone.rules.get();
+            zone.rules.accept(state.rules);
             state.rules.zone = zone;
             for(Tile core : state.teams.get(defaultTeam).cores){
                 for(ItemStack stack : zone.getStartingItems()){
